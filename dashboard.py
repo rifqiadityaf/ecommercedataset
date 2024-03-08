@@ -120,4 +120,4 @@ ax.tick_params(axis="x", rotation=45)
 ax.tick_params(axis="y", labelsize=15)
 st.pyplot(fig)
 
-st.write('Di atas adalah grafik yang menunjukkan jumlah biaya yang telah dikeluarkan customer di beberapa bulan terakhir.')
+st.write('Sesuai pada grafik pertanyaan 1 dengan jelas menunjukkan bahwa produk yang kurang laris terjual adalah auto sedangkan sebaliknya produk yang paling laris terjual adalah bed_bath_table. Sesuai pada grafik pertanyaan 2 total budget yang dihabiskan customer pada bulan Januari - Mei tidak terjadi perubahan yang signifikan, setelah itu terjadi penurunan pada bulan Juni-September, kemudian kenaikan signifikan pada bulan Oktober-November, dan kembali menurun pada bulan Desember.')
