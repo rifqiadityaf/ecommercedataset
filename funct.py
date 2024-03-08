@@ -1,4 +1,4 @@
-class DataAnalyst:
+class DataAnalyzer:
     def __init__(self, df):
         self.df = df
 
