@@ -1,54 +1,53 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import seaborn as sns
 import streamlit as st
+import urllib
+from func import DataAnalyzer, BrazilMapPlotter
 from babel.numbers import format_currency
-from funct import DataAnalyst
-
 sns.set(style='dark')
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
-all = pd.read_csv("all_data.csv")
+# Dataset
+datetime_cols = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date", "order_purchase_timestamp", "shipping_limit_date"]
+all_df = pd.read_csv("./data/all_data.csv")
+all_df.sort_values(by="order_approved_at", inplace=True)
+all_df.reset_index(inplace=True)
 
-datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date", "order_purchase_timestamp", "shipping_limit_date"]
-all.sort_values(by="order_approved_at", inplace=True)
-all.reset_index(inplace=True)
- 
-for column in datetime_columns:
-    all[column] = pd.to_datetime(all[column])
-min_date = all["order_approved_at"].min()
-max_date = all["order_approved_at"].max()
- 
 with st.sidebar:
     st.title("Rifqi Aditya Fadhil")
-    
+
     start_date, end_date = st.date_input(
-        label='Rentang Waktu',min_value=min_date,
-        max_value=max_date,
-        value=[min_date, max_date]
+        label="Select Date Range",
+        value=[min_date, max_date],
+        min_value=min_date,
+        max_value=max_date
     )
 
-main_df = all[(all["order_approved_at"] >= str(start_date)) & 
-                 (all["order_approved_at"] <= str(end_date))]
+main_df = all_df[(all_df["order_approved_at"] >= str(start_date)) & 
+                 (all_df["order_approved_at"] <= str(end_date))]
 
-function = DataAnalyst(main_df)
+function = DataAnalyzer(main_df)
+map_plot = BrazilMapPlotter(data, plt, mpimg, urllib, st)
 
 daily_orders_df = function.create_daily_orders_df()
 sum_spend_df = function.create_sum_spend_df()
+sum_order_items_df = function.create_sum_order_items_df()
 
-st.header('Dicoding E-Commerce Dashboard :convenience_store:')
+st.header("E-Commerce Dashboard")
 
-# Daily Orders
 st.subheader("Daily Orders")
 
 col1, col2 = st.columns(2)
 
 with col1:
     total_order = daily_orders_df["order_count"].sum()
-    st.markdown(f"Order Total: **{total_order}**")
+    st.markdown(f"Total Order: **{total_order}**")
 
 with col2:
     total_revenue = format_currency(daily_orders_df["revenue"].sum(), "IDR", locale="id_ID")
-    st.markdown(f"Revenue Total: **{total_revenue}**")
+    st.markdown(f"Total Revenue: **{total_revenue}**")
 
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(
@@ -56,44 +55,11 @@ ax.plot(
     daily_orders_df["order_count"],
     marker="o",
     linewidth=2,
-    color="#72BCD4"
+    color="#90CAF9"
 )
 ax.tick_params(axis="x", rotation=45)
 ax.tick_params(axis="y", labelsize=15)
 st.pyplot(fig)
-
-# Order Items
-st.subheader("Items Order")
-col1, col2 = st.columns(2)
-
-with col1:
-    total_items = sum_order_items_df["product_count"].sum()
-    st.markdown(f"Items Total: **{total_items}**")
-
-with col2:
-    avg_items = sum_order_items_df["product_count"].mean()
-    st.markdown(f"Items Average: **{avg_items}**")
-
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(45, 25))
-
-colors = ["#72BCD4", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
-
-sns.barplot(x="product_count", y="product_category_name_english", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
-ax[0].set_ylabel(None)
-ax[0].set_xlabel("Number of Sales", fontsize=30)
-ax[0].set_title("Produk yang paling laris", loc="center", fontsize=50)
-ax[0].tick_params(axis ='y', labelsize=35)
-ax[0].tick_params(axis ='x', labelsize=30)
-
-sns.barplot(x="product_count", y="product_category_name_english", data=sum_order_items_df.sort_values(by="product_count", ascending=True).head(5), palette=colors, ax=ax[1])
-ax[1].set_ylabel(None)
-ax[1].set_xlabel("Number of Sales", fontsize=30)
-ax[1].invert_xaxis()
-ax[1].yaxis.set_label_position("right")
-ax[1].yaxis.tick_right()
-ax[1].set_title("Produk yang kurang laris", loc="center", fontsize=50)
-ax[1].tick_params(axis='y', labelsize=35)
-ax[1].tick_params(axis='x', labelsize=30)
 
 st.subheader("Customer Spend Money")
 col1, col2 = st.columns(2)
@@ -118,4 +84,83 @@ ax.tick_params(axis="x", rotation=45)
 ax.tick_params(axis="y", labelsize=15)
 st.pyplot(fig)
 
-st.write('Sesuai pada grafik pertanyaan 1 dengan jelas menunjukkan bahwa produk yang kurang laris terjual adalah auto sedangkan sebaliknya produk yang paling laris terjual adalah bed_bath_table. Sesuai pada grafik pertanyaan 2 total budget yang dihabiskan customer pada bulan Januari - Mei tidak terjadi perubahan yang signifikan, setelah itu terjadi penurunan pada bulan Juni-September, kemudian kenaikan signifikan pada bulan Oktober-November, dan kembali menurun pada bulan Desember.')
+# Order Items
+st.subheader("Order Items")
+col1, col2 = st.columns(2)
+
+with col1:
+    total_items = sum_order_items_df["product_count"].sum()
+    st.markdown(f"Total Items: **{total_items}**")
+
+with col2:
+    avg_items = sum_order_items_df["product_count"].mean()
+    st.markdown(f"Average Items: **{avg_items}**")
+
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(45, 25))
+
+colors = ["#068DA9", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
+
+sns.barplot(x="product_count", y="product_category_name_english", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
+ax[0].set_ylabel(None)
+ax[0].set_xlabel("Number of Sales", fontsize=30)
+ax[0].set_title("Produk paling banyak terjual", loc="center", fontsize=50)
+ax[0].tick_params(axis ='y', labelsize=35)
+ax[0].tick_params(axis ='x', labelsize=30)
+
+sns.barplot(x="product_count", y="product_category_name_english", data=sum_order_items_df.sort_values(by="product_count", ascending=True).head(5), palette=colors, ax=ax[1])
+ax[1].set_ylabel(None)
+ax[1].set_xlabel("Number of Sales", fontsize=30)
+ax[1].invert_xaxis()
+ax[1].yaxis.set_label_position("right")
+ax[1].yaxis.tick_right()
+ax[1].set_title("Produk paling sedikit terjual", loc="center", fontsize=50)
+ax[1].tick_params(axis='y', labelsize=35)
+ax[1].tick_params(axis='x', labelsize=30)
+
+st.pyplot(fig)
+
+# Customer Demographic
+st.subheader("Customer Demographic")
+tab1, tab2, tab3 = st.tabs(["State", "Order Status", "Geolocation"])
+
+with tab1:
+    most_common_state = state.customer_state.value_counts().index[0]
+    st.markdown(f"Most Common State: **{most_common_state}**")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.barplot(x=state.customer_state.value_counts().index,
+                y=state.customer_count.values, 
+                data=state,
+                palette=["#068DA9" if score == most_common_state else "#D3D3D3" for score in state.customer_state.value_counts().index]
+                    )
+
+    plt.title("Number customers from State", fontsize=15)
+    plt.xlabel("State")
+    plt.ylabel("Number of Customers")
+    plt.xticks(fontsize=12)
+    st.pyplot(fig)
+
+with tab2:
+    common_status_ = order_status.value_counts().index[0]
+    st.markdown(f"Most Common Order Status: **{common_status_}**")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.barplot(x=order_status.index,
+                y=order_status.values,
+                order=order_status.index,
+                palette=["#068DA9" if score == common_status else "#D3D3D3" for score in order_status.index]
+                )
+    
+    plt.title("Order Status", fontsize=15)
+    plt.xlabel("Status")
+    plt.ylabel("Count")
+    plt.xticks(fontsize=12)
+    st.pyplot(fig)
+
+with tab3:
+    map_plot.plot()
+
+    with st.expander("See Explanation"):
+        st.write('Sesuai dengan grafik yang sudah dibuat, ada lebih banyak pelanggan di bagian tenggara dan selatan. Informasi lainnya, ada lebih banyak pelanggan di kota-kota yang merupakan ibu kota (São Paulo, Rio de Janeiro, Porto Alegre, dan lainnya).')
+
+st.caption('Copyright (C) Sulistiawan A. P. 2023')
