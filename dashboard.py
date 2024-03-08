@@ -50,7 +50,7 @@ class DataAnalyzer:
 
 sns.set(style='dark')
 
-all = pd.read_csv("data_all.csv")
+all = pd.read_csv("all_data.csv")
 
 datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date", "order_purchase_timestamp", "shipping_limit_date"]
 all.sort_values(by="order_approved_at", inplace=True)
