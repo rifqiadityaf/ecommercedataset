@@ -34,8 +34,6 @@ function = DataAnalyst(main_df)
 
 daily_orders_df = function.create_daily_orders_df()
 sum_spend_df = function.create_sum_spend_df()
-sum_order_items_df = function.create_sum_order_items_df()
-state, most_common_state = function.create_bystate_df()
 
 st.header('Dicoding E-Commerce Dashboard :convenience_store:')
 
