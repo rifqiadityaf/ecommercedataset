@@ -95,6 +95,8 @@ ax[1].set_title("Produk yang kurang laris", loc="center", fontsize=50)
 ax[1].tick_params(axis='y', labelsize=35)
 ax[1].tick_params(axis='x', labelsize=30)
 
+st.pyplot(fig)
+
 st.subheader("Customer Spend Money")
 col1, col2 = st.columns(2)
 
